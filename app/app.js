@@ -11,7 +11,7 @@ angular.module('myApp', [
   	var helloState = {
 		    name: 'hello',
 		    url: '/hello',
-		    template: '<h3>hello world!</h3>'
+		    component: 'hello'
 		};
 
 	var aboutState = {
@@ -20,43 +20,53 @@ angular.module('myApp', [
 			component: 'about'
 		};
 
-	var people = {
+	var peopleState = {
 			name: 'people',
 		  	url: '/people',
-			template: '<h3>People</h3>'		  
+			component: 'people',
+			resolve: {
+		        people: function(PeopleService) {
+		        	return PeopleService.getAllPeople();
+		    	}
+		    }
 		};
 
 	$stateProvider.state(helloState);
 	$stateProvider.state(aboutState);
-	$stateProvider.state(people);
+	$stateProvider.state(peopleState);
 
 }])
+
+.component('hello', {
+	template:  '<h3>Hello</h3>'
+})
 
 .component('about', {
 	template:  '<h3>Its the UI-Router<br>Hello Solar System app!</h3>'
 })
 
-// .component('people', {
-// 	template:  '<h3>People of the Solar System!</h3>',
+.component('people', {
+	template: '<h3>Some people:</h3>' +
+			    '<ul>' +
+			    '  <li ng-repeat="person in $ctrl.people">' +
+			    '    <a ui-sref="person({ personId: person.id })">' +
+			    '      {{person.name}}' +
+			    '    </a>' +
+			    '  </li>' +
+			    '</ul>',	
 
-//     controller: function() {
-// 	    this.greeting = 'People';
-	  
-// 	    this.toggleGreeting = function() {
-// 	    	this.greeting = (this.greeting == 'hello') ? 'whats up' : 'hello';
-// 	    }
-// 	}
-// })
+	bindings: { people: '<' },
+})
 
-.service('PeopleSerivce', function ($http, $q) {
+.service('PeopleService', function ($http, $q) {
 	var BASE_URL = "http://localhost:3000/db";
 
 	this.getAllPeople = function () {
-		$http.get(BASE_URL)
+		return $http.get(BASE_URL)
 			.then(this.successCallback);
 	}
 
 	this.successCallback = function (response) {
-		return response;
+		return response.data;
 	}
 })
