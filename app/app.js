@@ -6,21 +6,27 @@ angular.module('myApp', [
   'ui.router'
 ])
 
-.config([ '$stateProvider', function( $stateProvider) {
+.config([ '$stateProvider', '$locationProvider', function( $stateProvider, $locationProvider) {
 
-  	var helloState = {
+     $locationProvider.html5Mode({
+            enabled: true,
+            requireBase: false
+        });
+
+  	var states = [
+  		{
 		    name: 'hello',
 		    url: '/hello',
 		    component: 'hello'
-		};
+		},
 
-	var aboutState = {
+	 	{
 			name: 'about',
 			url: '/about',
 			component: 'about'
-		};
+		},
 
-	var peopleState = {
+		{
 			name: 'people',
 		  	url: '/people',
 			component: 'people',
@@ -29,11 +35,23 @@ angular.module('myApp', [
 		        	return PeopleService.getAllPeople();
 		    	}
 		    }
-		};
+		},
 
-	$stateProvider.state(helloState);
-	$stateProvider.state(aboutState);
-	$stateProvider.state(peopleState);
+		{
+			name: 'person',
+			url: '/people/:personId',
+			component: 'person',
+			resolve: {
+				person: function(PeopleService, $transition$) {
+					  return PeopleService.getPerson($transition$.params().personId);
+					}
+				}
+		}
+	];
+
+	states.forEach(function (state) {
+		$stateProvider.state(state);	
+	})
 
 }])
 
@@ -46,27 +64,48 @@ angular.module('myApp', [
 })
 
 .component('people', {
-	template: '<h3>Some people:</h3>' +
-			    '<ul>' +
-			    '  <li ng-repeat="person in $ctrl.people">' +
-			    '    <a ui-sref="person({ personId: person.id })">' +
-			    '      {{person.name}}' +
-			    '    </a>' +
-			    '  </li>' +
-			    '</ul>',	
+	template: `
+				<h3>Some people:</h3>
+		  		<ul>
+		      		<li ng-repeat="person in $ctrl.people">
 
-	bindings: { people: '<' },
+		        		<a ui-sref="person({ personId: person.id })">
+		          			{{person.name}}
+		          			{{person.id}}
+		        		</a>
+		      		
+		      		</li>
+		    	</ul>
+		    `,	
+
+	bindings: { people: '<' }
+})
+
+.component('person', {
+	template:  `<h3>
+					Person:
+					{{$ctrl.person.name}}
+					{{$ctrl.person.skill}}
+				</h3>`,
+
+	bindings: { person: '<' }
 })
 
 .service('PeopleService', function ($http, $q) {
-	var BASE_URL = "http://localhost:3000/db";
+	var BASE_URL = "http://localhost:3000";
 
 	this.getAllPeople = function () {
-		return $http.get(BASE_URL)
+		return $http.get(BASE_URL + "/db")
 			.then(this.successCallback);
 	}
 
-	this.successCallback = function (response) {
+    this.getPerson = function(id) {
+
+		return $http.get(BASE_URL + "/" + id)
+			.then(this.successCallback);
+    }
+
+    this.successCallback = function (response) {
 		return response.data;
 	}
 })
