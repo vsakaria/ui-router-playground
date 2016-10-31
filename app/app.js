@@ -38,8 +38,8 @@ angular.module('myApp', [
 		},
 
 		{
-			name: 'person',
-			url: '/people/:personId',
+			name: 'people.person',
+			url: '/{personId}',
 			component: 'person',
 			resolve: {
 				person: function(PeopleService, $transition$) {
@@ -66,16 +66,21 @@ angular.module('myApp', [
 .component('people', {
 	template: `
 				<h3>Some people:</h3>
-		  		<ul>
-		      		<li ng-repeat="person in $ctrl.people">
+		  		
+				<div class="people">
+			  		<ul>
+			      		<li ng-repeat="person in $ctrl.people">
 
-		        		<a ui-sref="person({ personId: person.id })">
-		          			{{person.name}}
-		          			{{person.id}}
-		        		</a>
-		      		
-		      		</li>
-		    	</ul>
+			        		<a ui-sref="people.person({ personId: person.id })">
+			          			{{person.name}}
+			          			{{person.id}}
+			        		</a>
+			      		
+			      		</li>
+			    	</ul>
+			    </div>
+
+			    <ui-view></ui-view>
 		    `,	
 
 	bindings: { people: '<' }
